@@ -24,3 +24,15 @@ colcon build
 source install/setup.bash
 
 ![result](./images/result.gif)
+
+1. Timestamp mismatch
+EKF는 센서 간 시간 기반 보간을 수행하기 때문에,
+메시지의 header.stamp가 실제 GPS 관측 시간(msg.header.stamp)이어야 합니다.
+현재 코드처럼 self.get_clock().now()로 찍으면 EKF 입력 시간 불일치 → TF 계산 중단.
+
+2. Covariance 누락
+EKF는 각 센서의 오차 신뢰도를 공분산 행렬로 판단합니다.
+0으로 들어가면 수치적으로 특이해져서 필터 update를 생략하는 경우가 있습니다.
+(robot_localization은 “zero covariance = ignore measurement” 옵션 동작)
+
+3. Topic 이름 불일치 때문에 EKF가 입력 데이터를 구독하지 못함
